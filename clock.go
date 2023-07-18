@@ -38,7 +38,8 @@ func (engine *Engine) storeClock() {
 		monthNum      = -1
 		weekNum       = -1
 		yearNum       = 0
-		yearSubscript = 0
+		yearSubscript = 0 //年下标
+		//monthSubscript = 0 //月下标
 	)
 	var (
 		tempSecond = 0
@@ -231,7 +232,7 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 		//判断月进位和年进位
 		for i, monthDay := tempMonth, 0; monthDay <= tempDay; {
 			monthDay = daysInMonth(*yearNum, time.Month(i))
-			if monthDay <= tempDay {
+			if monthDay >= tempDay {
 				break
 			} else {
 				monthCan++
