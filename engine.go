@@ -64,6 +64,17 @@ func (engine *Engine) Run() {
 	engine.run()
 }
 
+// ReSet 重置。重置会停止运行，需要手动重启。
+func (engine *Engine) ReSet(expression string, function func()) error {
+	engine.ch <- 1
+	return engine.Set(expression, function)
+}
+
+// Stop 停止
+func (engine *Engine) Stop() {
+	engine.ch <- 1
+}
+
 // 处理cron字符串
 func (engine *Engine) handelExpression() error {
 	//将表达式按照空格进行切分
