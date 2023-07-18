@@ -153,6 +153,11 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 		} else {
 			if *minuteNum == -1 {
 				*minuteNum = time.Now().Minute()
+				if len(h.s) != 0 {
+					if h.s[*secondNum] < time.Now().Second() {
+						*minuteNum++
+					}
+				}
 			} else {
 				*minuteNum++
 				if *minuteNum == 60 {
