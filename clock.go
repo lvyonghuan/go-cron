@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"log"
 	"time"
 )
 
@@ -97,7 +98,7 @@ func (engine *Engine) storeClock() {
 		}
 		tempTime := time.Date(yearNum, time.Month(tempMonth), tempDay, tempHour, tempMinute, tempSecond, 0, time.Local)
 
-		//log.Println(tempTime)
+		log.Println(tempTime)
 		engine.h.mu.Lock()
 		engine.h.timeLine = append(engine.h.timeLine, tempTime)
 		engine.h.mu.Unlock()
@@ -131,11 +132,15 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 			minuteCan = true //进位指示器改动为true
 		}
 	} else { //假如切片长为0，则代表每秒/每分...都要加1，此时下标指示直接用于显示秒、分（而不通过切片设定的数值）
-		*secondNum++
-		//如果该进位了，则归零。
-		if *secondNum == 60 {
-			*secondNum = 0
-			minuteCan = true //设置进位指示器
+		if *secondNum == -1 { //初始化时间
+			*secondNum = time.Now().Second()
+		} else {
+			*secondNum++
+			//如果该进位了，则归零。
+			if *secondNum == 60 {
+				*secondNum = 0
+				minuteCan = true //设置进位指示器
+			}
 		}
 	}
 
@@ -152,10 +157,14 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 			}
 			minuteCan = false //进位完成，本级进位指示器改动为false
 		} else {
-			*minuteNum++
-			if *minuteNum == 60 {
-				*minuteNum = 0
-				hourCan = true
+			if *minuteNum == -1 {
+				*minuteNum = time.Now().Minute()
+			} else {
+				*minuteNum++
+				if *minuteNum == 60 {
+					*minuteNum = 0
+					hourCan = true
+				}
 			}
 			minuteCan = false //进位完成，本级进位指示器改动为false
 		}
@@ -173,11 +182,15 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 				weekCan = true
 			}
 		} else {
-			*hourNum++
-			if *hourNum == 24 {
-				*hourNum = 0
-				dayCan = true
-				weekCan = true
+			if *hourNum == -1 {
+				*hourNum = time.Now().Hour()
+			} else {
+				*hourNum++
+				if *hourNum == 24 {
+					*hourNum = 0
+					dayCan = true
+					weekCan = true
+				}
 			}
 		}
 		hourCan = false
