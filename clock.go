@@ -1,7 +1,6 @@
 package cron
 
 import (
-	"log"
 	"time"
 )
 
@@ -28,7 +27,7 @@ func (engine *Engine) clock() {
 	}
 }
 
-// 将下一个时刻存储进一个队列里，用的时候再取出来。队列连续追加到70，到达之后睡30s再判断。最坏的情况就是每秒都得跑。拿10秒做冗余。
+// 将下一个时刻存储进一个队列里，用的时候再取出来。队列连续追加到70，到达之后睡60s再判断。最坏的情况就是每秒都得跑。拿10秒做冗余。
 func (engine *Engine) storeClock() {
 	//指示切片下标的位置
 	var (
@@ -53,12 +52,6 @@ func (engine *Engine) storeClock() {
 		yearNum = time.Now().Year()
 	} else {
 		yearNum = engine.h.y[0]
-	}
-	if len(engine.h.m) == 0 {
-		monthNum = int(time.Now().Month())
-	}
-	if len(engine.h.d) == 0 {
-		dayNum = int(time.Now().Day())
 	}
 	for {
 		engine.judge(&secondNum, &minuteNum, &hourNum, &dayNum, &monthNum, &weekNum, &yearNum, &yearSubscript)
@@ -98,12 +91,12 @@ func (engine *Engine) storeClock() {
 		}
 		tempTime := time.Date(yearNum, time.Month(tempMonth), tempDay, tempHour, tempMinute, tempSecond, 0, time.Local)
 
-		log.Println(tempTime)
+		//log.Println(tempTime)
 		engine.h.mu.Lock()
 		engine.h.timeLine = append(engine.h.timeLine, tempTime)
 		engine.h.mu.Unlock()
 		if len(engine.h.timeLine) >= 70 {
-			time.Sleep(30 * time.Second)
+			time.Sleep(60 * time.Second)
 		}
 	}
 }
@@ -208,7 +201,11 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 			}
 			tempDay = h.d[*dayNum]
 		} else {
-			*dayNum++
+			if *dayNum == -1 {
+				*dayNum = time.Now().Day()
+			} else {
+				*dayNum++
+			}
 			tempDay = *dayNum
 		}
 		//天需要特殊处理。对每月的天数进行判断。
@@ -226,10 +223,9 @@ func (engine *Engine) judge(secondNum, minuteNum, hourNum, dayNum, monthNum, wee
 			}
 		} else {
 			if *monthNum == -1 {
-				*monthNum = 1
-			} else {
-				tempMonth = *monthNum
+				*monthNum = int(time.Now().Month())
 			}
+			tempMonth = *monthNum
 		}
 
 		//判断月进位和年进位

@@ -8,7 +8,7 @@ import (
 
 func TestCron(t *testing.T) {
 	engine := cron.CreateEngine()
-	err := engine.Set("5 * * * * * *", func() {
+	err := engine.Set("40 * * * * * *", func() {
 		log.Println("hello")
 	})
 	if err != nil {
